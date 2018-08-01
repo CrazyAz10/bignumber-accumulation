@@ -1,0 +1,22 @@
+.bn-text,.js-text{
+	margin: 20px;
+	font-size:  24px;
+}
+.bn-text>span,.js-text>span{
+	display: inline-block;
+	border: 1px solid #ddd;
+	padding:  10px;
+	min-width: 300px;
+}
+.tool{
+	margin: 20px;
+	padding: 10px;
+}
+pre{
+	font-size: 16px;
+    color: #333;
+    border: 1px solid #ccc;
+    background: #eee;
+    width: 400px;
+    padding: 10px;
+}

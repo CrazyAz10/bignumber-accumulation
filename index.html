@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>啊佐Demo</title>
+	<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+	<h3>jq+bignumber实现动效数字累加DEMO</h3>
+<p>js常见计算问题：</p>
+<pre>
+0.1+0.2   //0.30000000000000004
+1-0.9     //0.09999999999999998
+9007199254740993-9007199254740992  //0
+Math.pow(2,1023) //8.98846567431158e+307   
+//但是
+Math.pow(2,1024)  //Infinity
+</pre>
+	<p>使用bignumber.js计算可以防止计算结果失精度</p>
+	<p>
+		bignumber.js官方说明文档:<br />
+		<a href="http://mikemcl.github.io/bignumber.js/" target="_blank">http://mikemcl.github.io/bignumber.js</a>
+	</p>
+	<div class="tool">
+		以下效果为数值<input type="number" id="ollNumber" value="100"></input>更新到<input type="number" id="newNumber" value="5646465.123123"></input>的动态效果
+		<button id="afreshBtn">点击重新计算</button>
+	</div>
+	<div class="bn-text">
+		使用bignumber计算结果：<span id="bnval" data-nval="5646465.123123">100</span>
+	</div>
+	<div class="js-text">
+		js计算结果：<span id="jsval" data-nval="5646465.123123">100</span>
+	</div>
+</body>
+</html>
+<script src="./jquery3.0.0.min.js"></script>
+<script src="./bignumber.js"></script>
+<script>
+	$(document).ready(function(){
+		afreshCalc();
+		$("#afreshBtn").click(function(){
+			afreshCalc();
+		});
+		function afreshCalc(){
+			var ollNumber = $("#ollNumber").val(),
+				newNumber = $("#newNumber").val();
+			$("#bnval").data('nval',newNumber).text(ollNumber);
+			$("#jsval").data('nval',newNumber).text(ollNumber);
+			needAccumulativeEle($("#bnval"));
+			needAccumulativeElejs($("#jsval"));
+		}
+
+		
+
+		// 需要累加动效的节点
+		function needAccumulativeEle(e){
+			var nVal = Number( e.data('nval') ),
+			val = Number( e.text() );
+			accumulativeTotal(val,nVal,e);
+		}
+
+		//数值变换动效  1000毫秒累加到最新数值 使用bignumber
+		function accumulativeTotal(inital,newNumber,ele){
+			if(isNaN(newNumber)||isNaN(inital)){
+				return '非法数值'
+			}
+			var speed = 1,//每次累加速度 单位毫秒 默认10毫秒
+				decimals = 1,//每次累加值  默认为1
+				cycleIndex = 0,//循环次数
+				fn = (newNumber-inital)>0?1:0,//判断是累加还是累减
+				timer;
+
+			//new BigNumber 用于计算防止结果失精度
+			inital = new BigNumber(inital);
+			newNumber = new BigNumber(newNumber);
+
+			//初始值和新值的差值
+			cycleIndex = new BigNumber( Math.abs( newNumber.minus(inital) ) ); 
+			//将相差值分成100份  每毫秒循环累加一份
+			decimals = Math.abs( newNumber.minus(inital).dividedBy(100) );
+			
+			//循环渲染新值
+			timer = setInterval(function(){
+				if(fn){
+					inital = inital.plus(decimals);
+				}else{
+					inital = inital.minus(decimals);
+				}
+				cycleIndex = cycleIndex.minus(decimals);
+				ele.text(inital);
+				//累加完毕 关闭定时器
+				if(cycleIndex<=0){
+					clearInterval(timer);
+				}
+			},speed);
+		}
+		/*-----------------js 计算结果-----------------*/ 
+		// js
+		function needAccumulativeElejs(e){
+			var nVal = Number( e.data('nval') ),
+			val = Number( e.text() );
+			accumulativeTotaljs(val,nVal,e);
+		}
+		//数值变换动效  1000毫秒累加到最新数值 不用bignumber
+		function accumulativeTotaljs(inital,newNumber,ele){
+			if(isNaN(newNumber)||isNaN(inital)){
+				return '非法数值'
+			}
+			var speed = 1,//每次累加速度 单位毫秒 默认10毫秒
+				decimals = 1,//每次累加值  默认为1
+				cycleIndex = 0,//循环次数
+				fn = (newNumber-inital)>0?1:0,//判断是累加还是累减
+				jstimer;
+
+
+			//初始值和新值的差值
+			cycleIndex = Math.abs( newNumber-inital ); 
+			//将相差值分成100份  每毫秒循环累加一份
+			decimals = Math.abs( (newNumber-inital) /100 );
+			
+			//循环渲染新值
+			jstimer = setInterval(function(){
+				if(fn){
+					inital = inital + decimals;
+				}else{
+					inital = inital - decimals;
+				}
+				cycleIndex = cycleIndex - decimals;
+				ele.text(inital);
+				//累加完毕 关闭定时器
+				if(cycleIndex<=0){
+					clearInterval(jstimer);
+				}
+			},speed);
+		}
+	});
+</script>
